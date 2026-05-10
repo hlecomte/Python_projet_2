@@ -23,7 +23,14 @@ Application web Flask pour évaluation sécurisée en culture informatique.
 
 ## Installation
 
-### 1. Créer l'environnement virtuel
+### 1. Cloner le dépot git hub
+
+```bash
+git clone "https://github.com/hlecomte/Python_projet_2/"
+cd Python_projet_2
+```
+
+### 2. Créer l'environnement virtuel
 
 ```bash
 python -m venv venv
@@ -31,19 +38,19 @@ source venv/bin/activate       # Linux / macOS
 venv\Scripts\activate          # Windows
 ```
 
-### 2. Installer les dépendances
+### 3. Installer les dépendances
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Initialiser la base de données (100+ questions)
+### 4. Initialiser la base de données (100+ questions)
 
 ```bash
 python seed.py
 ```
 
-### 4. Lancer l'application
+### 5. Lancer l'application
 
 ```bash
 python app.py
