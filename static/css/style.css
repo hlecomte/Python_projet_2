@@ -1,0 +1,150 @@
+/* ───────── Variables ───────── */
+:root {
+    --qcm-dark: #0f172a;
+    --qcm-card: #1e293b;
+    --qcm-border: #334155;
+    --qcm-accent: #6366f1;
+    --qcm-success: #22c55e;
+    --qcm-danger: #ef4444;
+}
+
+/* ───────── Global ───────── */
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+}
+
+/* ───────── Navbar ───────── */
+.navbar {
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.navbar-brand {
+    font-size: 1.15rem;
+    letter-spacing: .02em;
+}
+
+/* ───────── Cards ───────── */
+.card {
+    border-radius: 12px;
+}
+
+.stat-card {
+    transition: transform .2s, box-shadow .2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.1) !important;
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ───────── Footer ───────── */
+.footer {
+    border-top: 1px solid #e2e8f0;
+}
+
+/* ───────── Buttons ───────── */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-dark {
+    background-color: #1e293b;
+    border-color: #1e293b;
+}
+
+.btn-dark:hover {
+    background-color: #0f172a;
+    border-color: #0f172a;
+}
+
+/* ───────── Tables ───────── */
+.table th {
+    font-weight: 600;
+    font-size: .875rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+/* ───────── Alerts ───────── */
+.alert {
+    border-radius: 10px;
+    border-width: 0;
+    border-left: 4px solid;
+}
+
+.alert-success { border-left-color: #22c55e; }
+.alert-danger  { border-left-color: #ef4444; }
+.alert-warning { border-left-color: #f59e0b; }
+.alert-info    { border-left-color: #3b82f6; }
+
+/* ───────── Forms ───────── */
+.form-control, .form-select {
+    border-radius: 8px;
+    border-color: #cbd5e1;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+}
+
+/* ───────── Badge ───────── */
+.badge {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* ───────── QCM Page specific ───────── */
+.qcm-body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.qcm-body * {
+    -webkit-touch-callout: none;
+}
+
+/* Prevent text selection during exam */
+.qcm-body .question-slide p,
+.qcm-body .question-slide h5 {
+    cursor: default;
+}
+
+/* ───────── Timer colors ───────── */
+.timer-warning { color: #f59e0b !important; }
+.timer-critical { color: #ef4444 !important; }
+.bar-warning { background-color: #f59e0b !important; }
+.bar-critical { background-color: #ef4444 !important; }
+
+/* ───────── Animations ───────── */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0);    }
+}
+
+@keyframes pulseRed {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .5; }
+}
+
+.pulse-red {
+    animation: pulseRed .8s infinite;
+}
+
+/* ───────── Responsive ───────── */
+@media (max-width: 576px) {
+    .btn-lg { font-size: 1rem; padding: .6rem 1rem; }
+    h2 { font-size: 1.4rem; }
+}
