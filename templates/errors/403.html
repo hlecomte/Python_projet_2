@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Accès interdit – 403{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <i class="bi bi-lock-fill display-1 text-danger mb-3 d-block"></i>
+    <h1 class="display-4 fw-bold">403</h1>
+    <p class="lead text-muted">Accès interdit. Vous n'avez pas les droits nécessaires.</p>
+    <a href="{{ url_for('student.index') }}" class="btn btn-dark mt-2">Retour à l'accueil</a>
+</div>
+{% endblock %}
