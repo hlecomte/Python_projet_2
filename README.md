@@ -1,6 +1,6 @@
 # QCM Sécurisé – Projet LPASSR
 
-Application web Flask pour évaluation sécurisée en culture informatique.
+Application web Flask pour évaluation sécurisée en culture informatique. - Projet du Groupe : "C'est quoi l'OpenSource ?"
 
 ## Fonctionnalités
 
