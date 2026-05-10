@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Gestion des questions – Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-question-circle me-2"></i>Questions</h2>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin.import_questions') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-upload me-1"></i>Importer CSV
+        </a>
+        <a href="{{ url_for('admin.new_question') }}" class="btn btn-dark">
+            <i class="bi bi-plus-circle me-2"></i>Nouvelle question
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<form method="GET" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="text" name="search" class="form-control" placeholder="Rechercher…"
+                   value="{{ search }}">
+        </div>
+    </div>
+    <div class="col-md-2">
+        <select name="category" class="form-select">
+            <option value="">Toutes catégories</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="difficulty" class="form-select">
+            <option value="">Toutes difficultés</option>
+            <option value="facile" {% if selected_difficulty == 'facile' %}selected{% endif %}>Facile</option>
+            <option value="normal" {% if selected_difficulty == 'normal' %}selected{% endif %}>Normal</option>
+            <option value="difficile" {% if selected_difficulty == 'difficile' %}selected{% endif %}>Difficile</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="active" class="form-select">
+            <option value="">Toutes</option>
+            <option value="1" {% if selected_active == '1' %}selected{% endif %}>Actives seulement</option>
+            <option value="0" {% if selected_active == '0' %}selected{% endif %}>Inactives seulement</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-dark">Filtrer</button>
+        <a href="{{ url_for('admin.questions') }}" class="btn btn-outline-secondary ms-1">
+            <i class="bi bi-x"></i>
+        </a>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-2 px-3 border-bottom">
+        <small class="text-muted">{{ questions.total }} question(s) – dont
+            {{ questions.query.filter_by(is_active=True).count() if questions.query else '?' }} active(s)
+        </small>
+    </div>
+    <div class="card-body p-0">
+        {% if questions.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Question</th>
+                        <th class="text-center">Catégorie</th>
+                        <th class="text-center">Difficulté</th>
+                        <th class="text-center">Statut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in questions.items %}
+                    <tr class="{% if not q.is_active %}table-secondary text-muted{% endif %}">
+                        <td class="text-muted">{{ q.id }}</td>
+                        <td style="max-width:380px">
+                            <span class="d-block text-truncate" title="{{ q.text }}">{{ q.text }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">{{ q.category }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge
+                                {% if q.difficulty == 'facile' %}bg-success
+                                {% elif q.difficulty == 'difficile' %}bg-danger
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ q.difficulty|capitalize }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <form method="POST"
+                                  action="{{ url_for('admin.toggle_question', question_id=q.id) }}"
+                                  class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit"
+                                        class="btn btn-sm {% if q.is_active %}btn-success{% else %}btn-outline-secondary{% endif %}"
+                                        title="{% if q.is_active %}Désactiver{% else %}Activer{% endif %}">
+                                    <i class="bi bi-{% if q.is_active %}toggle-on{% else %}toggle-off{% endif %}"></i>
+                                    {% if q.is_active %}Active{% else %}Inactive{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{{ url_for('admin.edit_question', question_id=q.id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="POST"
+                                      action="{{ url_for('admin.delete_question', question_id=q.id) }}"
+                                      onsubmit="return confirm('Supprimer cette question ?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if questions.pages > 1 %}
+        <div class="d-flex justify-content-center py-3">
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item {% if not questions.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ questions.prev_num }}&category={{ selected_category }}&difficulty={{ selected_difficulty }}&active={{ selected_active }}&search={{ search }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% for p in questions.iter_pages() %}
+                    {% if p %}
+                    <li class="page-item {% if p == questions.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}&category={{ selected_category }}&difficulty={{ selected_difficulty }}&active={{ selected_active }}&search={{ search }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not questions.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ questions.next_num }}&category={{ selected_category }}&difficulty={{ selected_difficulty }}&active={{ selected_active }}&search={{ search }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+            <p>Aucune question trouvée.</p>
+            <a href="{{ url_for('admin.new_question') }}" class="btn btn-dark">Ajouter une question</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

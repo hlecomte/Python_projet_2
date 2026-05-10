@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Gestion des utilisateurs – Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-people me-2"></i>Utilisateurs</h2>
+    <a href="{{ url_for('admin.new_user') }}" class="btn btn-dark">
+        <i class="bi bi-person-plus me-2"></i>Nouvel utilisateur
+    </a>
+</div>
+
+<!-- Search -->
+<form method="GET" class="mb-3">
+    <div class="input-group shadow-sm" style="max-width:400px">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" name="search" class="form-control" placeholder="Rechercher…"
+               value="{{ search }}">
+        <button type="submit" class="btn btn-dark">Chercher</button>
+        {% if search %}
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-x"></i>
+        </a>
+        {% endif %}
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th class="text-center">Rôle</th>
+                        <th class="text-center">Statut</th>
+                        <th class="text-center">Tentatives</th>
+                        <th>Inscrit le</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users.items %}
+                    <tr>
+                        <td>
+                            <strong>{{ u.username }}</strong>
+                            {% if u.id == current_user.id %}
+                            <span class="badge bg-info ms-1">Moi</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted">{{ u.email }}</td>
+                        <td class="text-center">
+                            <span class="badge {% if u.role == 'admin' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ 'Admin' if u.role == 'admin' else 'Étudiant' }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if u.is_active %}
+                            <span class="badge bg-success">Actif</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center text-muted">
+                            {{ u.sessions | selectattr('is_completed') | list | length }}
+                        </td>
+                        <td class="text-muted small">{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{{ url_for('admin.edit_user', user_id=u.id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if u.id != current_user.id %}
+                                <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}"
+                                      onsubmit="return confirm('Supprimer {{ u.username }} ?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            Aucun utilisateur trouvé.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if users.pages > 1 %}
+        <div class="d-flex justify-content-center py-3">
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item {% if not users.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ users.prev_num }}&search={{ search }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% for p in users.iter_pages() %}
+                    {% if p %}
+                    <li class="page-item {% if p == users.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}&search={{ search }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not users.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ users.next_num }}&search={{ search }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

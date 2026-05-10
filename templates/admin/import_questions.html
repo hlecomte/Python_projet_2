@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Importer des questions – Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4 gap-3">
+            <a href="{{ url_for('admin.questions') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Retour
+            </a>
+            <h3 class="fw-bold mb-0"><i class="bi bi-upload me-2"></i>Importer des questions CSV</h3>
+        </div>
+
+        {% if results %}
+        <div class="card border-0 shadow-sm mb-4
+            {% if results.added > 0 %}border-start border-success border-4{% else %}border-start border-danger border-4{% endif %}">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Résultat de l'import</h5>
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+                            <div class="fw-bold fs-3 text-success">{{ results.added }}</div>
+                            <div class="text-muted small">Question(s) importée(s)</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-center p-3 bg-danger bg-opacity-10 rounded">
+                            <div class="fw-bold fs-3 text-danger">{{ results.errors | length }}</div>
+                            <div class="text-muted small">Erreur(s)</div>
+                        </div>
+                    </div>
+                </div>
+                {% if results.errors %}
+                <h6 class="fw-semibold text-danger mb-2">Détail des erreurs :</h6>
+                <ul class="list-group list-group-flush">
+                    {% for err in results.errors %}
+                    <li class="list-group-item list-group-item-danger small py-1">
+                        <i class="bi bi-exclamation-triangle me-1"></i>{{ err }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="mb-4">
+                        {{ form.csv_file.label(class="form-label fw-semibold") }}
+                        {{ form.csv_file(class="form-control" + (" is-invalid" if form.csv_file.errors else ""),
+                                        accept=".csv") }}
+                        {% for e in form.csv_file.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        <div class="form-text">Fichier .csv encodé en UTF-8, avec en-tête.</div>
+                    </div>
+                    <button type="submit" class="btn btn-dark px-4">
+                        <i class="bi bi-upload me-2"></i>Importer
+                    </button>
+                    <a href="{{ url_for('admin.export_questions') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-download me-1"></i>Télécharger modèle
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-file-earmark-text me-2"></i>Format du fichier CSV</h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2">La première ligne doit contenir exactement ces en-têtes :</p>
+                <pre class="bg-dark text-success p-3 rounded small">question,category,difficulty,option_a,option_b,option_c,option_d,correct</pre>
+
+                <p class="small text-muted mb-2">Exemple de ligne :</p>
+                <pre class="bg-dark text-light p-3 rounded small" style="white-space:pre-wrap">
+"Combien de couches dans le modèle OSI ?","Réseaux","facile","4","5","7","9","c"</pre>
+
+                <div class="row g-2 mt-2">
+                    <div class="col-md-6">
+                        <h6 class="small fw-semibold">Catégories valides :</h6>
+                        <ul class="small text-muted mb-0">
+                            <li>Réseaux</li>
+                            <li>Sécurité</li>
+                            <li>Système</li>
+                            <li>Programmation</li>
+                            <li>Base de données</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="small fw-semibold">Difficultés :</h6>
+                        <ul class="small text-muted mb-0">
+                            <li>facile</li>
+                            <li>normal</li>
+                            <li>difficile</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="small fw-semibold">Correct :</h6>
+                        <ul class="small text-muted mb-0">
+                            <li>a (option A)</li>
+                            <li>b (option B)</li>
+                            <li>c (option C)</li>
+                            <li>d (option D)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

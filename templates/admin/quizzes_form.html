@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} – Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="d-flex align-items-center mb-4 gap-3">
+            <a href="{{ url_for('admin.quizzes') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Retour
+            </a>
+            <h3 class="fw-bold mb-0">{{ title }}</h3>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label fw-semibold") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""),
+                                    placeholder="Ex : Examen mi-parcours – Réseaux", autofocus=true) }}
+                        {% for e in form.name.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label fw-semibold") }}
+                        {{ form.description(class="form-control", rows=2,
+                                           placeholder="Description optionnelle du quiz…") }}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            {{ form.start_time.label(class="form-label fw-semibold") }}
+                            <input type="datetime-local" name="start_time"
+                                   class="form-control {% if form.start_time.errors %}is-invalid{% endif %}"
+                                   value="{{ form.start_time.data.strftime('%Y-%m-%dT%H:%M') if form.start_time.data else '' }}">
+                            {% for e in form.start_time.errors %}
+                            <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.end_time.label(class="form-label fw-semibold") }}
+                            <input type="datetime-local" name="end_time"
+                                   class="form-control {% if form.end_time.errors %}is-invalid{% endif %}"
+                                   value="{{ form.end_time.data.strftime('%Y-%m-%dT%H:%M') if form.end_time.data else '' }}">
+                            {% for e in form.end_time.errors %}
+                            <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            {{ form.question_count.label(class="form-label fw-semibold") }}
+                            {{ form.question_count(class="form-control" + (" is-invalid" if form.question_count.errors else ""),
+                                                   min=1, max=50) }}
+                            {% for e in form.question_count.errors %}
+                            <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.category_filter.label(class="form-label fw-semibold") }}
+                            {{ form.category_filter(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.difficulty_filter.label(class="form-label fw-semibold") }}
+                            {{ form.difficulty_filter(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.is_active(class="form-check-input") }}
+                            {{ form.is_active.label(class="form-check-label fw-semibold") }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-dark px-4">
+                            <i class="bi bi-check-lg me-2"></i>
+                            {% if is_edit %}Enregistrer{% else %}Planifier{% endif %}
+                        </button>
+                        <a href="{{ url_for('admin.quizzes') }}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-3 bg-light">
+            <div class="card-body small text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Les questions sont tirées au hasard depuis le pool actif, filtrées par catégorie et difficulté si précisées.
+                Le quiz n'est accessible aux étudiants que pendant la fenêtre de temps définie.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

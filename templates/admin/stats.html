@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}Statistiques – Admin{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="bi bi-bar-chart me-2"></i>Statistiques détaillées</h2>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fw-bold fs-3 text-primary">{{ total }}</div>
+            <div class="text-muted small">Tentatives totales</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fw-bold fs-3 text-success">{{ avg_score }}/20</div>
+            <div class="text-muted small">Note moyenne</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fw-bold fs-3 text-info">{{ best }}/20</div>
+            <div class="text-muted small">Meilleur score</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fw-bold fs-3 text-danger">{{ worst }}/20</div>
+            <div class="text-muted small">Score le plus bas</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Score range chart -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-bar-chart me-2"></i>Distribution par tranches de notes</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="rangeChart" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cheat events -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-shield-exclamation me-2 text-danger"></i>Incidents de triche</h6>
+            </div>
+            <div class="card-body p-0">
+                {% if cheat_events %}
+                <ul class="list-group list-group-flush">
+                    {% for event_type, count in cheat_events %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="small">
+                            {% if event_type == 'tab_switch' %}<i class="bi bi-window me-1 text-warning"></i>Changement d'onglet
+                            {% elif event_type == 'fullscreen_exit' %}<i class="bi bi-fullscreen-exit me-1 text-danger"></i>Sortie plein écran
+                            {% elif event_type == 'keyboard_shortcut' %}<i class="bi bi-keyboard me-1 text-info"></i>Raccourci clavier bloqué
+                            {% elif event_type == 'window_blur' %}<i class="bi bi-eye-slash me-1 text-warning"></i>Fenêtre en arrière-plan
+                            {% else %}<i class="bi bi-exclamation-triangle me-1"></i>{{ event_type }}{% endif %}
+                        </span>
+                        <span class="badge bg-danger rounded-pill">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="text-center py-4 text-muted small">
+                    <i class="bi bi-check-circle-fill text-success fs-3 d-block mb-2"></i>
+                    Aucun incident détecté
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Most missed questions -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-x-circle me-2 text-danger"></i>Top 10 questions les plus ratées</h6>
+            </div>
+            <div class="card-body p-0">
+                {% if missed_questions %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Question</th>
+                                <th class="text-center">Catégorie</th>
+                                <th class="text-center">Difficulté</th>
+                                <th class="text-center">Erreurs</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q, count in missed_questions %}
+                            <tr>
+                                <td style="max-width:400px">
+                                    <span class="d-block text-truncate" title="{{ q.text }}">{{ q.text }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">{{ q.category }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge
+                                        {% if q.difficulty == 'facile' %}bg-success
+                                        {% elif q.difficulty == 'difficile' %}bg-danger
+                                        {% else %}bg-warning text-dark{% endif %}">
+                                        {{ q.difficulty|capitalize }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-danger rounded-pill">{{ count }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.edit_question', question_id=q.id) }}"
+                                       class="btn btn-xs btn-outline-secondary btn-sm">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">Aucune donnée disponible</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const rangeData = {{ score_ranges | tojson }};
+new Chart(document.getElementById('rangeChart'), {
+    type: 'bar',
+    data: {
+        labels: Object.keys(rangeData),
+        datasets: [{
+            label: 'Étudiants',
+            data: Object.values(rangeData),
+            backgroundColor: ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4'],
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+</script>
+{% endblock %}
