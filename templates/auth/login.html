@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Connexion – QCM LPASSR{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow border-0 mt-4">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <i class="bi bi-shield-lock-fill fs-3"></i>
+                <h4 class="mb-0 mt-1">Connexion</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label fw-semibold") }}
+                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""),
+                                        placeholder="Votre nom d'utilisateur", autofocus=true) }}
+                        {% for e in form.username.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.password.label(class="form-label fw-semibold") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""),
+                                        placeholder="Votre mot de passe") }}
+                        {% for e in form.password.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer text-center bg-light py-3">
+                <span class="text-muted">Pas encore de compte ?</span>
+                <a href="{{ url_for('auth.register') }}" class="ms-1 fw-semibold">S'inscrire</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

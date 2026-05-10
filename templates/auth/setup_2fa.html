@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Configurer l'A2F – QCM Sécurisé{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <i class="bi bi-shield-lock-fill fs-3 text-warning"></i>
+                <h4 class="mb-0 mt-1">Authentification à deux facteurs</h4>
+                <div class="small text-white-50 mt-1">Étape obligatoire pour sécuriser votre compte</div>
+            </div>
+            <div class="card-body p-4">
+
+                <div class="alert alert-info border-0 shadow-sm">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    Scannez le QR code avec <strong>Google Authenticator</strong>,
+                    <strong>Authy</strong> ou toute application TOTP compatible.
+                </div>
+
+                <!-- QR Code -->
+                <div class="text-center my-4">
+                    <div id="qrcode" class="d-inline-block border rounded p-2 bg-white shadow-sm"></div>
+                </div>
+
+                <!-- Clé manuelle -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold small text-muted text-uppercase">
+                        Clé manuelle (si scan impossible)
+                    </label>
+                    <div class="input-group">
+                        <input type="text" class="form-control font-monospace" id="secretKey"
+                               value="{{ secret }}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copySecret()"
+                                title="Copier">
+                            <i class="bi bi-clipboard" id="copyIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Confirmation -->
+                <form method="POST" action="{{ url_for('auth.confirm_2fa') }}" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.code.label(class="form-label fw-semibold") }}
+                        {{ form.code(class="form-control form-control-lg text-center font-monospace" +
+                                    (" is-invalid" if form.code.errors else ""),
+                                    placeholder="123456", autofocus=true,
+                                    inputmode="numeric", autocomplete="one-time-code",
+                                    maxlength="6") }}
+                        {% for e in form.code.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        <div class="form-text">Entrez le code à 6 chiffres affiché dans votre application.</div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+                        <i class="bi bi-shield-check me-2"></i>Activer l'A2F
+                    </button>
+                </form>
+
+                {% if not current_user.totp_enabled %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('student.dashboard') if not current_user.is_admin else url_for('admin.dashboard') }}"
+                       class="text-muted small">
+                        Configurer plus tard
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<script>
+new QRCode(document.getElementById("qrcode"), {
+    text: "{{ provisioning_uri }}",
+    width: 200,
+    height: 200,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
+});
+
+function copySecret() {
+    const key = document.getElementById('secretKey');
+    key.select();
+    navigator.clipboard.writeText(key.value).then(() => {
+        const icon = document.getElementById('copyIcon');
+        icon.className = 'bi bi-check2 text-success';
+        setTimeout(() => { icon.className = 'bi bi-clipboard'; }, 2000);
+    });
+}
+</script>
+{% endblock %}

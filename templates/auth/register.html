@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Inscription – QCM LPASSR{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow border-0 mt-4">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <i class="bi bi-person-plus-fill fs-3"></i>
+                <h4 class="mb-0 mt-1">Créer un compte</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label fw-semibold") }}
+                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""),
+                                        placeholder="Choisissez un nom d'utilisateur", autofocus=true) }}
+                        {% for e in form.username.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        <div class="form-text">Entre 3 et 80 caractères</div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label fw-semibold") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""),
+                                     placeholder="votre@email.com") }}
+                        {% for e in form.email.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label fw-semibold") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""),
+                                        placeholder="Minimum 8 caractères") }}
+                        {% for e in form.password.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.confirm.label(class="form-label fw-semibold") }}
+                        {{ form.confirm(class="form-control" + (" is-invalid" if form.confirm.errors else ""),
+                                       placeholder="Répétez le mot de passe") }}
+                        {% for e in form.confirm.errors %}
+                        <div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold">
+                        <i class="bi bi-person-check me-2"></i>Créer mon compte
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer text-center bg-light py-3">
+                <span class="text-muted">Déjà inscrit ?</span>
+                <a href="{{ url_for('auth.login') }}" class="ms-1 fw-semibold">Se connecter</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
