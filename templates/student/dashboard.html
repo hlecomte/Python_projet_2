@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Mon tableau de bord – QCM LPASSR{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+        <i class="bi bi-house-fill me-2 text-dark"></i>
+        Bonjour, {{ current_user.username }} !
+    </h2>
+    <a href="{{ url_for('student.start_qcm') }}" class="btn btn-dark btn-lg shadow-sm">
+        <i class="bi bi-play-circle-fill me-2"></i>Commencer un QCM
+    </a>
+</div>
+
+<!-- Stats cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 stat-card">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon bg-primary-subtle rounded-circle mx-auto mb-3">
+                    <i class="bi bi-clipboard-check text-primary fs-3"></i>
+                </div>
+                <h3 class="fw-bold text-primary">{{ total_attempts }}</h3>
+                <p class="text-muted mb-0">Tentative{{ 's' if total_attempts > 1 else '' }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 stat-card">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon bg-success-subtle rounded-circle mx-auto mb-3">
+                    <i class="bi bi-graph-up text-success fs-3"></i>
+                </div>
+                <h3 class="fw-bold text-success">{{ avg_score }}/20</h3>
+                <p class="text-muted mb-0">Moyenne générale</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 stat-card">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon bg-warning-subtle rounded-circle mx-auto mb-3">
+                    <i class="bi bi-trophy text-warning fs-3"></i>
+                </div>
+                {% if recent_sessions %}
+                <h3 class="fw-bold text-warning">{{ recent_sessions[0].score }}/20</h3>
+                <p class="text-muted mb-0">Dernier résultat</p>
+                {% else %}
+                <h3 class="fw-bold text-muted">–</h3>
+                <p class="text-muted mb-0">Aucune tentative</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent sessions -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-clock-history me-2"></i>Tentatives récentes</h5>
+        <a href="{{ url_for('student.history') }}" class="btn btn-outline-dark btn-sm">
+            Voir tout <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if recent_sessions %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th class="text-center">Note</th>
+                        <th class="text-center">Durée</th>
+                        <th class="text-center">Tentatives triche</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in recent_sessions %}
+                    <tr>
+                        <td>{{ s.end_time.strftime('%d/%m/%Y %H:%M') if s.end_time else '–' }}</td>
+                        <td class="text-center">
+                            <span class="badge fs-6
+                                {% if s.score >= 14 %}bg-success
+                                {% elif s.score >= 10 %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}">
+                                {{ s.score }}/20
+                            </span>
+                        </td>
+                        <td class="text-center text-muted">
+                            {% if s.duration_seconds %}
+                            {{ (s.duration_seconds // 60)|int }}min {{ (s.duration_seconds % 60)|int }}s
+                            {% else %}–{% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if s.cheat_count > 0 %}
+                            <span class="badge bg-danger">{{ s.cheat_count }}</span>
+                            {% else %}
+                            <span class="text-success"><i class="bi bi-check-circle-fill"></i></span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('student.result', session_id=s.id) }}"
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-eye me-1"></i>Détails
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+            <p class="mb-3">Vous n'avez pas encore passé de QCM.</p>
+            <a href="{{ url_for('student.start_qcm') }}" class="btn btn-dark">
+                <i class="bi bi-play-circle me-2"></i>Passer mon premier QCM
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quiz planifiés disponibles -->
+{% if available_quizzes %}
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-broadcast text-success me-2"></i>Quiz disponibles maintenant
+        </h5>
+        <a href="{{ url_for('student.list_quizzes') }}" class="btn btn-outline-dark btn-sm">Voir tous</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for quiz in available_quizzes %}
+            <div class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
+                <div>
+                    <div class="fw-semibold">{{ quiz.name }}</div>
+                    <div class="small text-muted">
+                        Ferme à {{ quiz.end_time.strftime('%H:%M') }}
+                        &bull; {{ quiz.question_count }} questions
+                        {% if quiz.category_filter %}&bull; {{ quiz.category_filter }}{% endif %}
+                    </div>
+                </div>
+                <a href="{{ url_for('student.start_qcm', quiz_id=quiz.id) }}"
+                   class="btn btn-success btn-sm">
+                    <i class="bi bi-play-fill me-1"></i>Commencer
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Info card -->
+<div class="card border-0 shadow-sm mt-4 bg-dark text-white">
+    <div class="card-body py-3 px-4">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <i class="bi bi-info-circle-fill fs-3 text-info"></i>
+            </div>
+            <div class="col">
+                <strong>Règles du QCM :</strong>
+                Questions aléatoires &bull; 30 secondes par question &bull;
+                Navigation en plein écran obligatoire &bull;
+                2 points par bonne réponse (20 points max)
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

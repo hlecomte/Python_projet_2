@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Historique – QCM LPASSR{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Mon historique</h2>
+    <a href="{{ url_for('student.start_qcm') }}" class="btn btn-dark">
+        <i class="bi bi-play-circle me-2"></i>Nouveau QCM
+    </a>
+</div>
+
+<!-- Stats bar -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fw-bold fs-4 text-primary">{{ sessions.total }}</div>
+            <div class="text-muted small">Total tentatives</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fw-bold fs-4 text-success">{{ avg_score }}/20</div>
+            <div class="text-muted small">Moyenne générale</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center py-3">
+            <div class="fw-bold fs-4 text-warning">{{ best_score }}/20</div>
+            <div class="text-muted small">Meilleur score</div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        {% if sessions.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th class="text-center">Note</th>
+                        <th class="text-center">Durée</th>
+                        <th class="text-center">Incidents</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sessions.items %}
+                    <tr>
+                        <td class="text-muted">#{{ s.id }}</td>
+                        <td>{{ s.end_time.strftime('%d/%m/%Y %H:%M') if s.end_time else '–' }}</td>
+                        <td class="text-center">
+                            <span class="badge fs-6
+                                {% if s.score >= 14 %}bg-success
+                                {% elif s.score >= 10 %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}">
+                                {{ s.score }}/20
+                            </span>
+                        </td>
+                        <td class="text-center text-muted">
+                            {% if s.duration_seconds %}
+                            {{ (s.duration_seconds // 60)|int }}min {{ (s.duration_seconds % 60)|int }}s
+                            {% else %}–{% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if s.cheat_count > 0 %}
+                            <span class="badge bg-danger">{{ s.cheat_count }}</span>
+                            {% else %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('student.result', session_id=s.id) }}"
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-eye me-1"></i>Voir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if sessions.pages > 1 %}
+        <div class="d-flex justify-content-center py-3">
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item {% if not sessions.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ sessions.prev_num }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% for p in sessions.iter_pages() %}
+                    {% if p %}
+                    <li class="page-item {% if p == sessions.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not sessions.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ sessions.next_num }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+            <p>Aucune tentative enregistrée.</p>
+            <a href="{{ url_for('student.start_qcm') }}" class="btn btn-dark">Commencer</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

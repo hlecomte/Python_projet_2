@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Résultats du QCM – LPASSR{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+
+        <!-- Score card -->
+        <div class="card border-0 shadow mb-4 overflow-hidden">
+            <div class="card-header text-white py-4 text-center
+                {% if session.score >= 14 %}bg-success
+                {% elif session.score >= 10 %}bg-warning
+                {% else %}bg-danger{% endif %}">
+                <div class="display-4 fw-bold mb-1">{{ session.score }}/20</div>
+                <div class="fs-5 fw-semibold">{{ mention[0] }}</div>
+            </div>
+            <div class="card-body">
+                <div class="row text-center g-3">
+                    <div class="col-sm-3">
+                        <div class="text-muted small">Bonnes réponses</div>
+                        <div class="fw-bold fs-5 text-success">
+                            {{ answers_data | selectattr('user_answer') | selectattr('user_answer.is_correct') | list | length }}
+                            / {{ answers_data | length }}
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="text-muted small">Durée totale</div>
+                        <div class="fw-bold fs-5">
+                            {% if session.duration_seconds %}
+                            {{ (session.duration_seconds // 60)|int }}m
+                            {{ (session.duration_seconds % 60)|int }}s
+                            {% else %}–{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="text-muted small">Incidents détectés</div>
+                        <div class="fw-bold fs-5 {% if session.cheat_count > 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ session.cheat_count }}
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="text-muted small">Date</div>
+                        <div class="fw-bold">
+                            {{ session.end_time.strftime('%d/%m/%Y') if session.end_time else '–' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if session.time_exceeded %}
+        <div class="alert alert-warning shadow-sm">
+            <i class="bi bi-clock-fill me-2"></i>
+            <strong>Attention :</strong> Le temps imparti a été dépassé. Ce résultat peut être contesté.
+        </div>
+        {% endif %}
+
+        <!-- Corrections -->
+        <h4 class="fw-bold mb-3"><i class="bi bi-journal-text me-2"></i>Corrections détaillées</h4>
+
+        {% for item in answers_data %}
+        <div class="card border-0 shadow-sm mb-3
+            {% if item.user_answer and item.user_answer.is_correct %}border-start border-success border-4
+            {% elif not item.user_answer or not item.user_answer.chosen_option_id %}border-start border-secondary border-4
+            {% else %}border-start border-danger border-4{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="fw-semibold text-secondary small">
+                        <i class="bi bi-tag me-1"></i>{{ item.question.category }}
+                    </div>
+                    {% if item.user_answer and item.user_answer.is_correct %}
+                    <span class="badge bg-success"><i class="bi bi-check-lg me-1"></i>Correct +2pts</span>
+                    {% elif not item.user_answer or not item.user_answer.chosen_option_id %}
+                    <span class="badge bg-secondary"><i class="bi bi-dash me-1"></i>Non répondu</span>
+                    {% else %}
+                    <span class="badge bg-danger"><i class="bi bi-x-lg me-1"></i>Incorrect</span>
+                    {% endif %}
+                </div>
+
+                <p class="fw-semibold mb-3">{{ item.question.text }}</p>
+
+                <div class="row g-2">
+                    {% for option in item.question.options|sort(attribute='order') %}
+                    <div class="col-md-6">
+                        <div class="p-2 rounded border small
+                            {% if option.is_correct %}border-success bg-success bg-opacity-10 text-success fw-semibold
+                            {% elif item.user_answer and item.user_answer.chosen_option_id == option.id and not option.is_correct %}
+                                border-danger bg-danger bg-opacity-10 text-danger
+                            {% else %}border-light text-muted{% endif %}">
+                            {% if option.is_correct %}
+                            <i class="bi bi-check-circle-fill me-1"></i>
+                            {% elif item.user_answer and item.user_answer.chosen_option_id == option.id %}
+                            <i class="bi bi-x-circle-fill me-1"></i>
+                            {% else %}
+                            <i class="bi bi-circle me-1"></i>
+                            {% endif %}
+                            {{ option.text }}
+                            {% if item.user_answer and item.user_answer.chosen_option_id == option.id and not option.is_correct %}
+                            <span class="badge bg-secondary ms-1">votre réponse</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Actions -->
+        <div class="d-flex gap-3 mt-4 flex-wrap">
+            <a href="{{ url_for('student.start_qcm') }}" class="btn btn-dark btn-lg">
+                <i class="bi bi-arrow-repeat me-2"></i>Recommencer un QCM
+            </a>
+            <a href="{{ url_for('student.history') }}" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-clock-history me-2"></i>Voir l'historique
+            </a>
+            <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-house me-2"></i>Tableau de bord
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

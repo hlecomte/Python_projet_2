@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Quiz planifiés – QCM Sécurisé{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-calendar-event me-2"></i>Quiz planifiés</h2>
+    <a href="{{ url_for('student.start_qcm') }}" class="btn btn-outline-dark btn-sm">
+        <i class="bi bi-shuffle me-1"></i>QCM libre
+    </a>
+</div>
+
+{% if quizzes %}
+<div class="row g-3">
+    {% for quiz in quizzes %}
+    {% set is_open = quiz.is_available_now %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 {% if is_open %}border-top border-success border-3{% else %}border-top border-secondary border-3{% endif %}">
+            <div class="card-body d-flex flex-column">
+                <div class="mb-2">
+                    {% if is_open %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-broadcast me-1"></i>Disponible maintenant
+                    </span>
+                    {% elif quiz.start_time > now %}
+                    <span class="badge bg-primary">
+                        <i class="bi bi-clock me-1"></i>À venir
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary">Terminé</span>
+                    {% endif %}
+                </div>
+
+                <h5 class="fw-bold mb-1">{{ quiz.name }}</h5>
+                {% if quiz.description %}
+                <p class="text-muted small mb-2">{{ quiz.description }}</p>
+                {% endif %}
+
+                <div class="small text-muted mb-3">
+                    <div><i class="bi bi-play-fill me-1 text-success"></i>
+                        <strong>Début :</strong> {{ quiz.start_time.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                    <div><i class="bi bi-stop-fill me-1 text-danger"></i>
+                        <strong>Fin :</strong> {{ quiz.end_time.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                    <div class="mt-1">
+                        <i class="bi bi-question-circle me-1"></i>
+                        {{ quiz.question_count }} question(s)
+                        {% if quiz.category_filter %}
+                        &bull; <span class="badge bg-secondary">{{ quiz.category_filter }}</span>
+                        {% endif %}
+                        {% if quiz.difficulty_filter %}
+                        &bull; <span class="badge bg-light text-dark border">{{ quiz.difficulty_filter }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-auto">
+                    {% if is_open %}
+                    <a href="{{ url_for('student.start_qcm', quiz_id=quiz.id) }}"
+                       class="btn btn-success w-100">
+                        <i class="bi bi-play-circle me-2"></i>Commencer ce quiz
+                    </a>
+                    {% elif quiz.start_time > now %}
+                    <button class="btn btn-outline-secondary w-100" disabled>
+                        <i class="bi bi-hourglass me-2"></i>Pas encore disponible
+                    </button>
+                    {% else %}
+                    <button class="btn btn-outline-secondary w-100" disabled>
+                        <i class="bi bi-lock me-2"></i>Terminé
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5 text-muted">
+        <i class="bi bi-calendar-x fs-1 d-block mb-3 opacity-50"></i>
+        <p class="mb-3">Aucun quiz planifié disponible actuellement.</p>
+        <a href="{{ url_for('student.start_qcm') }}" class="btn btn-dark">
+            <i class="bi bi-play-circle me-2"></i>Passer un QCM libre
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
